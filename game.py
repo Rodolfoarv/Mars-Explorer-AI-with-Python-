@@ -306,7 +306,7 @@ def run():
 
     for ant_no in xrange(ANT_COUNT):
         ant = Ant(world, ant_image)
-        ant.location = Vector2(randint(0, w), randint(0, h))
+        ant.location = Vector2(NEST_POSITION[0], NEST_POSITION[1])
         ant.brain.set_state("exploring")
         world.add_entity(ant)
 
