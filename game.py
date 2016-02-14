@@ -104,7 +104,7 @@ class World(object):
             entity.render(surface)
 
 
-    def get_close_entity(self, name, location, range=40.):
+    def get_close_entity(self, name, location, range=60.):
 
         location = Vector2(*location)
 
