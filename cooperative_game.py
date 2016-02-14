@@ -1,6 +1,6 @@
 SCREEN_SIZE = (640, 480)
 NEST_POSITION = (320, 240)
-ANT_COUNT = 1
+ANT_COUNT = 2
 ROCK_COUNT = 10
 NEST_SIZE = 100.
 
@@ -71,7 +71,6 @@ class World(object):
         pygame.draw.circle(self.background, (200, 255, 200), NEST_POSITION, int(NEST_SIZE))
 
     def add_entity(self, entity):
-
         self.entities[self.entity_id] = entity
         entity.id = self.entity_id
         self.entity_id += 1
@@ -101,9 +100,7 @@ class World(object):
 
 
     def get_close_entity(self, name, location, range=100.):
-
         location = Vector2(*location)
-
         for entity in self.entities.itervalues():
             if entity.name == name:
                 distance = location.get_distance_to(entity.location)
@@ -158,10 +155,9 @@ class Rock(GameEntity):
 
 class Crumb(GameEntity):
     def __init__(self,world,image):
-        GameEntity.__init__(self, world, "image", image)
+        GameEntity.__init__(self, world, "crumb", image)
 
 class Ant(GameEntity):
-
     def __init__(self, world, image):
 
         GameEntity.__init__(self, world, "ant", image)
@@ -172,11 +168,13 @@ class Ant(GameEntity):
 
         #Cooperative states
         dropping_delivering_state = AntStateDroppingAndDelivering(self)
+        seeking_picking_state = AntStateSeekingAndPicking(self)
 
         self.brain.add_state(exploring_state)
         self.brain.add_state(seeking_state)
         self.brain.add_state(delivering_state)
         self.brain.add_state(dropping_delivering_state)
+        self.brain.add_state(seeking_picking_state)
         self.carry_image = None
         self.crumb_image = pygame.image.load("crumb.png").convert_alpha()
 
@@ -196,9 +194,12 @@ class Ant(GameEntity):
 
     def dropCrumbs(self, surface):
         if self.carry_image:
+            crumb = Crumb(self.world, self.crumb_image)
+            self.world.add_entity(crumb)
             x, y = self.location
-            w, h = self.carry_image.get_size()
+            w, h = self.crumb_image.get_size()
             surface.blit(self.crumb_image, (x-w, y-h/2))
+
 
 
     def render(self, surface):
@@ -227,9 +228,16 @@ class AntStateExploring(State):
     def check_conditions(self):
 
         leaf = self.ant.world.get_close_entity("leaf", self.ant.location)
+        crumb = self.ant.world.get_close_entity("crumb", self.ant.location, range=500.)
+
+        if crumb is not None:
+            self.ant.crumb_id = crumb.id
+            return "seeking_picking"
+
         if leaf is not None:
             self.ant.leaf_id = leaf.id
             return "seeking"
+
 
 
         return None
@@ -268,6 +276,29 @@ class AntStateSeeking(State):
         leaf = self.ant.world.get(self.ant.leaf_id)
         if leaf is not None:
             self.ant.destination = leaf.location
+            self.ant.speed = 160. + randint(-20, 20)
+
+class AntStateSeekingAndPicking(State):
+    def __init__(self, ant):
+        State.__init__(self, "seeking_picking")
+        self.ant = ant
+        self.crumb_id = None
+
+    def check_conditions(self):
+        crumb = self.ant.world.get(self.ant.crumb_id)
+        if crumb is None:
+            return "exploring"
+
+        if self.ant.location.get_distance_to(crumb.location) < 5.0:
+            self.ant.world.remove_entity(crumb)
+            return "exploring"
+        return None
+
+    def entry_actions(self):
+
+        crumb = self.ant.world.get(self.ant.crumb_id)
+        if crumb is not None:
+            self.ant.destination = crumb.location
             self.ant.speed = 160. + randint(-20, 20)
 
 
@@ -315,12 +346,12 @@ def run_cooperative():
     screen = pygame.display.set_mode(SCREEN_SIZE, 0, 32)
     world = World()
     w, h = SCREEN_SIZE
-
     clock = pygame.time.Clock()
 
     ant_image = pygame.image.load("ant.png").convert_alpha()
     leaf_image = pygame.image.load("leaf.png").convert_alpha()
     rock_image = pygame.image.load("rock.png").convert_alpha()
+    crumb_image = pygame.image.load("crumb.png").convert_alpha()
 
     for ant_no in xrange(ANT_COUNT):
 
@@ -341,11 +372,16 @@ def run_cooperative():
             if event.type == QUIT:
                 return
         time_passed = clock.tick(30)
-
-        if randint(1, 15) == 1:
+        if randint(1, 10) == 1:
             leaf = Leaf(world, leaf_image)
             leaf.location = Vector2(randint(0, w), randint(0, h))
             world.add_entity(leaf)
+
+        # if randint(1, 15) == 1:
+        #     crumb = Crumb(world, crumb_image)
+        #     crumb.location = Vector2(randint(0, w), randint(0, h))
+        #     world.add_entity(crumb)
+
 
         world.process(time_passed)
         world.render(screen)
