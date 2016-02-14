@@ -153,6 +153,7 @@ class Leaf(GameEntity):
 
     def __init__(self, world, image):
         GameEntity.__init__(self, world, "leaf", image)
+        self.stock = 20
 
 class Rock(GameEntity):
     def __init__(self, world, image):
@@ -171,7 +172,6 @@ class Ant(GameEntity):
         self.brain.add_state(exploring_state)
         self.brain.add_state(seeking_state)
         self.brain.add_state(delivering_state)
-
         self.carry_image = None
 
     def carry(self, image):
@@ -245,7 +245,9 @@ class AntStateSeeking(State):
 
         if self.ant.location.get_distance_to(leaf.location) < 1.0:
             self.ant.carry(leaf.image)
-            self.ant.world.remove_entity(leaf)
+            leaf.stock -= 10
+            if leaf.stock <= 0:
+                self.ant.world.remove_entity(leaf)
             return "delivering"
 
 
