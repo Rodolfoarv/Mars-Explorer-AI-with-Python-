@@ -1,6 +1,6 @@
 SCREEN_SIZE = (640, 480)
 NEST_POSITION = (320, 240)
-ANT_COUNT = 20
+ANT_COUNT = 1
 ROCK_COUNT = 10
 NEST_SIZE = 100.
 
@@ -156,6 +156,10 @@ class Rock(GameEntity):
     def __init__(self, world, image):
         GameEntity.__init__(self, world, "rock", image)
 
+class Crumb(GameEntity):
+    def __init__(self,world,image):
+        GameEntity.__init__(self, world, "image", image)
+
 class Ant(GameEntity):
 
     def __init__(self, world, image):
@@ -169,19 +173,21 @@ class Ant(GameEntity):
         #Cooperative states
         dropping_delivering_state = AntStateDroppingAndDelivering(self)
 
-
         self.brain.add_state(exploring_state)
         self.brain.add_state(seeking_state)
         self.brain.add_state(delivering_state)
         self.brain.add_state(dropping_delivering_state)
         self.carry_image = None
+        self.crumb_image = pygame.image.load("crumb.png").convert_alpha()
+
+
+
 
     def carry(self, image):
 
         self.carry_image = image
 
     def drop(self, surface):
-
         if self.carry_image:
             x, y = self.location
             w, h = self.carry_image.get_size()
@@ -189,6 +195,10 @@ class Ant(GameEntity):
             self.carry_image = None
 
     def dropCrumbs(self, surface):
+        if self.carry_image:
+            x, y = self.location
+            w, h = self.carry_image.get_size()
+            surface.blit(self.crumb_image, (x-w, y-h/2))
 
 
     def render(self, surface):
@@ -202,7 +212,6 @@ class Ant(GameEntity):
 class AntStateExploring(State):
 
     def __init__(self, ant):
-
         State.__init__(self, "exploring")
         self.ant = ant
 
@@ -212,7 +221,6 @@ class AntStateExploring(State):
         self.ant.destination = Vector2(randint(0, w), randint(0, h))
 
     def do_actions(self):
-
         if randint(1, 4) == 1:
             self.random_destination()
 
@@ -251,9 +259,8 @@ class AntStateSeeking(State):
             leaf.stock -= 10
             if leaf.stock <= 0:
                 self.ant.world.remove_entity(leaf)
-            return "delivering"
-
-
+                return "delivering"
+            return "dropping_delivering"
         return None
 
     def entry_actions(self):
@@ -267,35 +274,46 @@ class AntStateSeeking(State):
 class AntStateDelivering(State):
 
     def __init__(self, ant):
-
         State.__init__(self, "delivering")
         self.ant = ant
 
-
     def check_conditions(self):
-
         if Vector2(*NEST_POSITION).get_distance_to(self.ant.location) < NEST_SIZE:
             if (randint(1, 10) == 1):
                 self.ant.drop(self.ant.world.background)
                 return "exploring"
-
         return None
 
-
     def entry_actions(self):
-
         self.ant.speed = 60.
         random_offset = Vector2(randint(-20, 20), randint(-20, 20))
         self.ant.destination = Vector2(*NEST_POSITION) + random_offset
 
 
-def run():
+class AntStateDroppingAndDelivering(State):
+    def __init__(self, ant):
+        State.__init__(self, "dropping_delivering")
+        self.ant = ant
+
+    def check_conditions(self):
+        self.ant.dropCrumbs(self.ant.world.background)
+        if Vector2(*NEST_POSITION).get_distance_to(self.ant.location) < NEST_SIZE:
+            if (randint(1, 10) == 1):
+                self.ant.drop(self.ant.world.background)
+                return "exploring"
+        return None
+
+    def entry_actions(self):
+        self.ant.speed = 60.
+        random_offset = Vector2(randint(-20, 20), randint(-20, 20))
+        self.ant.destination = Vector2(*NEST_POSITION) + random_offset
+
+
+def run_cooperative():
 
     pygame.init()
     screen = pygame.display.set_mode(SCREEN_SIZE, 0, 32)
-
     world = World()
-
     w, h = SCREEN_SIZE
 
     clock = pygame.time.Clock()
@@ -322,7 +340,6 @@ def run():
         for event in pygame.event.get():
             if event.type == QUIT:
                 return
-
         time_passed = clock.tick(30)
 
         if randint(1, 15) == 1:

@@ -3,6 +3,7 @@
 import sys
 import pygame
 from game import *
+from cooperative_game import *
 
 pygame.init()
 
@@ -155,14 +156,18 @@ class GameMenu():
             pygame.display.flip()
 
 if __name__ == "__main__":
-    def hello_world():
+    def single():
         run()
+
+    def cooperative():
+        run_cooperative()
 
     # Creating the screen
     screen = pygame.display.set_mode((640, 480), 0, 32)
 
     menu_items = ('Start', 'Quit')
-    funcs = {'Start': hello_world,
+    funcs = {'Start': single,
+             'Cooperative': cooperative,
              'Quit': sys.exit}
 
     pygame.display.set_caption('Game Menu')
