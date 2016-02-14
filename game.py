@@ -1,5 +1,5 @@
-SCREEN_SIZE = (640, 480)
-NEST_POSITION = (320, 240)
+SCREEN_SIZE = (720, 680)
+NEST_POSITION = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
 ANT_COUNT = 20
 ROCK_COUNT = 10
 NEST_SIZE = 40.
@@ -104,7 +104,7 @@ class World(object):
             entity.render(surface)
 
 
-    def get_close_entity(self, name, location, range=100.):
+    def get_close_entity(self, name, location, range=40.):
 
         location = Vector2(*location)
 
