@@ -3,6 +3,7 @@ NEST_POSITION = (320, 240)
 ANT_COUNT = 20
 ROCK_COUNT = 10
 NEST_SIZE = 100.
+LEAF_COUNT = 20
 
 import pygame
 from pygame.locals import *
@@ -313,6 +314,10 @@ def run():
         rock.location = Vector2(randint(0, w), randint(0, h))
         world.add_entity(rock)
 
+    for min_no in xrange(LEAF_COUNT):
+        leaf = Leaf(world, leaf_image)
+        leaf.location = Vector2(randint(0, w), randint(0, h))
+        world.add_entity(leaf)
 
     while True:
 
@@ -322,10 +327,6 @@ def run():
 
         time_passed = clock.tick(30)
 
-        if randint(1, 15) == 1:
-            leaf = Leaf(world, leaf_image)
-            leaf.location = Vector2(randint(0, w), randint(0, h))
-            world.add_entity(leaf)
 
         world.process(time_passed)
         world.render(screen)
