@@ -286,6 +286,8 @@ class AntStateDelivering(State):
         random_offset = Vector2(randint(-20, 20), randint(-20, 20))
         self.ant.destination = Vector2(*NEST_POSITION) + random_offset
 
+def is_inside_nest(x, y):
+    False
 
 def run():
 
@@ -303,7 +305,6 @@ def run():
     rock_image = pygame.image.load("rock.png").convert_alpha()
 
     for ant_no in xrange(ANT_COUNT):
-
         ant = Ant(world, ant_image)
         ant.location = Vector2(randint(0, w), randint(0, h))
         ant.brain.set_state("exploring")
@@ -311,7 +312,14 @@ def run():
 
     for rock_no in xrange(ROCK_COUNT):
         rock = Rock(world, rock_image)
-        rock.location = Vector2(randint(0, w), randint(0, h))
+        # TODO: prevent appearing inside the NEST
+        x_pos = randint(0, w)
+        y_pos = randint(0, h)
+        # while x,y inside nest repeat
+        while is_inside_nest(x_pos, y_pos):
+            x_pos = randint(0, w)
+            y_pos = randint(0, h)
+        rock.location = Vector2(x_pos, y_pos)
         world.add_entity(rock)
 
     for min_no in xrange(LEAF_COUNT):
