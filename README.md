@@ -4,13 +4,14 @@ This application was developed as part of the Artificial Intelligence.
 
 # TODO
 
+- Refactor
+
 ## Individual
-
-- Make the hole(ship) spawn on a random coordinate
-- Add radar to the hole, in order for the ants to return
-- Add collision between the ant and the rock.
-
+- Improve colisions
+- User input to start the game
+- Documentation
 
 ## Group
 
-- Refactor the individual implementation to use it into a group implementation
+- Make the ant eat the crumbs to grab a leaf
+- Add the collision and random exploring individual implementation
