@@ -122,7 +122,9 @@ class GameEntity(object):
         self.location = Vector2(0, 0)
         self.destination = Vector2(0, 0)
         self.speed = 0.
+
         self.brain = StateMachine()
+
         self.id = 0
 
     def render(self, surface):
@@ -164,9 +166,14 @@ class Ant(GameEntity):
         seeking_state = AntStateSeeking(self)
         delivering_state = AntStateDelivering(self)
 
+        #Cooperative states
+        dropping_delivering_state = AntStateDroppingAndDelivering(self)
+
+
         self.brain.add_state(exploring_state)
         self.brain.add_state(seeking_state)
         self.brain.add_state(delivering_state)
+        self.brain.add_state(dropping_delivering_state)
         self.carry_image = None
 
     def carry(self, image):
@@ -181,15 +188,16 @@ class Ant(GameEntity):
             surface.blit(self.carry_image, (x-w, y-h/2))
             self.carry_image = None
 
+    def dropCrumbs(self, surface):
+
+
     def render(self, surface):
 
         GameEntity.render(self, surface)
-
         if self.carry_image:
             x, y = self.location
             w, h = self.carry_image.get_size()
             surface.blit(self.carry_image, (x-w, y-h/2))
-
 
 class AntStateExploring(State):
 

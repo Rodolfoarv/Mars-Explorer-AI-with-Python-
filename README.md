@@ -13,4 +13,4 @@ This application was developed as part of the Artificial Intelligence.
 
 ## Group
 
-- Refactor the individual implementation to use it in a group implementation
+- Refactor the individual implementation to use it into a group implementation
