@@ -1,7 +1,7 @@
-SCREEN_SIZE = (720, 680)
+SCREEN_SIZE = (600, 600)
 NEST_POSITION = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
-ANT_COUNT = 20
-ROCK_COUNT = 10
+ANT_COUNT = 10
+ROCK_COUNT = 20
 NEST_SIZE = 40.
 LEAF_COUNT = 20
 
@@ -115,6 +115,17 @@ class World(object):
                     return entity
         return None
 
+    def in_obstacle(self, point, range=16.):
+        location = Vector2(*point)
+        for entity in self.entities.itervalues():
+            if entity.name == "rock":
+                distance = location.get_distance_to(entity.location)
+                if distance < range:
+                    return True
+        return False
+    def is_inside_nest(self, pos):
+        location = Vector2(*pos)
+        return Vector2(*NEST_POSITION).get_distance_to(location) < NEST_SIZE
 
 class GameEntity(object):
 
@@ -174,10 +185,12 @@ class Ant(GameEntity):
         self.brain.add_state(seeking_state)
         self.brain.add_state(delivering_state)
         self.carry_image = None
+        self.carry_leaf = None
 
-    def carry(self, image):
+    def carry(self, image, leaf):
 
         self.carry_image = image
+        self.carry_leaf = leaf
 
     def drop(self, surface):
 
@@ -185,7 +198,9 @@ class Ant(GameEntity):
             x, y = self.location
             w, h = self.carry_image.get_size()
             surface.blit(self.carry_image, (x-w, y-h/2))
+            # self.world.remove_entity(self.carry_leaf)
             self.carry_image = None
+            self.carry_leaf = None
 
     def render(self, surface):
 
@@ -195,7 +210,6 @@ class Ant(GameEntity):
             x, y = self.location
             w, h = self.carry_image.get_size()
             surface.blit(self.carry_image, (x-w, y-h/2))
-
 
 class AntStateExploring(State):
 
@@ -207,14 +221,21 @@ class AntStateExploring(State):
     def random_destination(self):
 
         w, h = SCREEN_SIZE
-        self.ant.destination = Vector2(randint(0, w), randint(0, h))
+        dest = Vector2(randint(0, w), randint(0, h))
+        # while self.ant.world.in_obstacle(dest):
+        #     print("COLLISION in ", dest)
+        #     print("ANT POS", self.ant.location)
+        #     dest = Vector2(randint(0, w), randint(0, h))
+        self.ant.destination = dest
 
     def do_actions(self):
-
-        if randint(1, 4) == 1:
-            self.random_destination()
+        self.random_destination()
 
     def check_conditions(self):
+        rock = self.ant.world.get_close_entity("rock", self.ant.location)
+        if self.ant.world.in_obstacle(self.ant.location):
+            print("COLLISION ", self.ant.location)
+            return "exploring"
 
         leaf = self.ant.world.get_close_entity("leaf", self.ant.location)
         if leaf is not None:
@@ -226,7 +247,7 @@ class AntStateExploring(State):
 
     def entry_actions(self):
 
-        self.ant.speed = 120. + randint(-30, 30)
+        self.ant.speed = 120.
         self.random_destination()
 
 
@@ -245,7 +266,7 @@ class AntStateSeeking(State):
             return "exploring"
 
         if self.ant.location.get_distance_to(leaf.location) < 1.0:
-            self.ant.carry(leaf.image)
+            self.ant.carry(leaf.image, leaf)
             leaf.stock -= 10
             if leaf.stock <= 0:
                 self.ant.world.remove_entity(leaf)
@@ -279,15 +300,21 @@ class AntStateDelivering(State):
 
         return None
 
+    def random_destination(self):
 
+        w, h = SCREEN_SIZE
+        dest = Vector2(randint(0, w), randint(0, h))
+        self.ant.destination = dest
+
+    def do_actions(self):
+        self.random_destination()
     def entry_actions(self):
 
         self.ant.speed = 60.
         random_offset = Vector2(randint(-20, 20), randint(-20, 20))
-        self.ant.destination = Vector2(*NEST_POSITION) + random_offset
+        # self.ant.destination = Vector2(*NEST_POSITION) + random_offset
+        self.random_destination()
 
-def is_inside_nest(x, y):
-    False
 
 def run():
 
@@ -312,11 +339,10 @@ def run():
 
     for rock_no in xrange(ROCK_COUNT):
         rock = Rock(world, rock_image)
-        # TODO: prevent appearing inside the NEST
         x_pos = randint(0, w)
         y_pos = randint(0, h)
-        # while x,y inside nest repeat
-        while is_inside_nest(x_pos, y_pos):
+        pos = (x_pos, y_pos)
+        while world.is_inside_nest(pos):
             x_pos = randint(0, w)
             y_pos = randint(0, h)
         rock.location = Vector2(x_pos, y_pos)
@@ -324,7 +350,10 @@ def run():
 
     for min_no in xrange(LEAF_COUNT):
         leaf = Leaf(world, leaf_image)
-        leaf.location = Vector2(randint(0, w), randint(0, h))
+        loc = (randint(0, w), randint(0, h))
+        while world.is_inside_nest(loc):
+            loc = (randint(0, w), randint(0, h))
+        leaf.location = Vector2(*loc)
         world.add_entity(leaf)
 
     while True:
