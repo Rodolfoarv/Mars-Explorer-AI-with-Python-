@@ -275,6 +275,8 @@ def menu(
             hold_rect_cursor.move_ip(-hotspot[0],-hotspot[1])
             dirty += (rr0,show_cursor())
 
+        elif ev.type == QUIT:
+            return "quit"
         elif ev.type == MOUSEBUTTONUP and ev.button == 1 and r.collidepoint(ev.pos):
             ret = menu[idx].label,idx
             break
@@ -365,7 +367,6 @@ if __name__ == '__main__':
     while True:
         resp = menu(['Single',
                      'Cooperative',
-                     'options',
                      'Quit::good bye'],
                      font1      = font.Font(join(here,'321impact.ttf'),25),
                      font2      = font.Font(join(here,'321impact.ttf'),30),
