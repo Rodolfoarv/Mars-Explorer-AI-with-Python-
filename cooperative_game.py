@@ -1,6 +1,6 @@
 SCREEN_SIZE = (640, 480)
 NEST_POSITION = (320, 240)
-ANT_COUNT = 2
+ANT_COUNT = 3
 ROCK_COUNT = 10
 NEST_SIZE = 100.
 
@@ -176,13 +176,9 @@ class Ant(GameEntity):
         self.brain.add_state(dropping_delivering_state)
         self.brain.add_state(seeking_picking_state)
         self.carry_image = None
-        self.crumb_image = pygame.image.load("crumb.png").convert_alpha()
-
-
-
+        self.carry_crumb_image = None
 
     def carry(self, image):
-
         self.carry_image = image
 
     def drop(self, surface):
@@ -194,13 +190,13 @@ class Ant(GameEntity):
 
     def dropCrumbs(self, surface):
         if self.carry_image:
-            crumb = Crumb(self.world, self.crumb_image)
+            crumb_image = pygame.image.load("crumb.png").convert_alpha()
+            crumb = Crumb(self.world, crumb_image)
+            crumb.location = self.location
             self.world.add_entity(crumb)
             x, y = self.location
-            w, h = self.crumb_image.get_size()
-            surface.blit(self.crumb_image, (x-w, y-h/2))
-
-
+            w, h = crumb_image.get_size()
+            surface.blit(crumb_image, (x-w, y-h/2))
 
     def render(self, surface):
 
@@ -228,15 +224,18 @@ class AntStateExploring(State):
     def check_conditions(self):
 
         leaf = self.ant.world.get_close_entity("leaf", self.ant.location)
-        crumb = self.ant.world.get_close_entity("crumb", self.ant.location, range=500.)
+        crumb = self.ant.world.get_close_entity("crumb", self.ant.location)
+        print crumb
 
         if crumb is not None:
             self.ant.crumb_id = crumb.id
             return "seeking_picking"
 
-        if leaf is not None:
+        elif leaf is not None:
             self.ant.leaf_id = leaf.id
             return "seeking"
+
+
 
 
 
@@ -251,13 +250,11 @@ class AntStateExploring(State):
 class AntStateSeeking(State):
 
     def __init__(self, ant):
-
         State.__init__(self, "seeking")
         self.ant = ant
         self.leaf_id = None
 
     def check_conditions(self):
-
         leaf = self.ant.world.get(self.ant.leaf_id)
         if leaf is None:
             return "exploring"
@@ -267,8 +264,8 @@ class AntStateSeeking(State):
             leaf.stock -= 10
             if leaf.stock <= 0:
                 self.ant.world.remove_entity(leaf)
-                return "delivering"
-            return "dropping_delivering"
+                return "dropping_delivering"
+            return "delivering"
         return None
 
     def entry_actions(self):
@@ -287,15 +284,15 @@ class AntStateSeekingAndPicking(State):
     def check_conditions(self):
         crumb = self.ant.world.get(self.ant.crumb_id)
         if crumb is None:
-            return "exploring"
-
-        if self.ant.location.get_distance_to(crumb.location) < 5.0:
+             print "got one"
+             return "exploring"
+        if self.ant.location.get_distance_to(crumb.location) < 1.0:
             self.ant.world.remove_entity(crumb)
             return "exploring"
         return None
 
     def entry_actions(self):
-
+        print self.ant.crumb_id
         crumb = self.ant.world.get(self.ant.crumb_id)
         if crumb is not None:
             self.ant.destination = crumb.location
@@ -372,15 +369,15 @@ def run_cooperative():
             if event.type == QUIT:
                 return
         time_passed = clock.tick(30)
-        if randint(1, 10) == 1:
+        if randint(1, 20) == 1:
             leaf = Leaf(world, leaf_image)
             leaf.location = Vector2(randint(0, w), randint(0, h))
             world.add_entity(leaf)
 
-        # if randint(1, 15) == 1:
-        #     crumb = Crumb(world, crumb_image)
-        #     crumb.location = Vector2(randint(0, w), randint(0, h))
-        #     world.add_entity(crumb)
+        if randint(1, 15) == 1:
+            crumb = Crumb(world, crumb_image)
+            crumb.location = Vector2(randint(0, w), randint(0, h))
+            world.add_entity(crumb)
 
 
         world.process(time_passed)
