@@ -67,8 +67,8 @@ class World(object):
 
         self.entities = {}
         self.entity_id = 0
-        self.background = pygame.surface.Surface(SCREEN_SIZE).convert()
-        self.background.fill((255, 255, 255))
+        self.background = pygame.image.load("grass.png").convert()
+
         pygame.draw.circle(self.background, (200, 255, 200), NEST_POSITION, int(NEST_SIZE))
 
     def add_entity(self, entity):
@@ -365,7 +365,6 @@ class GameOptions:
     LEAF_COUNT = 20
 
 def run_cooperative(options):
-
     if options:
         SCREEN_SIZE = options.SCREEN_SIZE
         AGENT_COUNT = options.AGENT_COUNT
@@ -373,6 +372,8 @@ def run_cooperative(options):
         LEAF_COUNT = options.LEAF_COUNT
 
     pygame.init()
+
+
     screen = pygame.display.set_mode(SCREEN_SIZE, 0, 32)
     world = World()
     w, h = SCREEN_SIZE
@@ -382,6 +383,7 @@ def run_cooperative(options):
     leaf_image = pygame.image.load("leaf.png").convert_alpha()
     rock_image = pygame.image.load("rock.png").convert_alpha()
     crumb_image = pygame.image.load("crumb.png").convert_alpha()
+
 
     for ant_no in xrange(AGENT_COUNT):
         ant = Ant(world, ant_image)
