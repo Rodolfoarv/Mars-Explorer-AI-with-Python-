@@ -364,21 +364,18 @@ if __name__ == '__main__':
 
     gm = GameMenu(scr)
 
-    while True:
-        resp = menu(['Single',
-                     'Cooperative',
-                     'Quit::good bye'],
-                     font1      = font.Font(join(here,'321impact.ttf'),25),
-                     font2      = font.Font(join(here,'321impact.ttf'),30),
-                     tooltipfont= font.Font(join(here,"Roboto-MediumItalic.ttf"),12),
-                     color1     = (255,80,40),
-                     light      = 9,
-                     tooltiptime= 1000,
-                     cursor_img = image.load('mouse.png'),
-                     hotspot    = (38,15))
+    resp = menu(['Single',
+                 'Cooperative',
+                 'Quit::good bye'],
+                 font1      = font.Font(join(here,'321impact.ttf'),25),
+                 font2      = font.Font(join(here,'321impact.ttf'),30),
+                 tooltipfont= font.Font(join(here,"Roboto-MediumItalic.ttf"),12),
+                 color1     = (255,80,40),
+                 light      = 9,
+                 tooltiptime= 1000,
+                 cursor_img = image.load('mouse.png'),
+                 hotspot    = (38,15))
 
-        if resp[0] == "Single": gm.run("single")
-        elif resp[0] == "Cooperative": gm.run("coop")
-        elif resp[0] == "Quit": break
-        elif resp[0] != "re-show": break
+    if resp[0] == "Single": gm.run("single")
+    elif resp[0] == "Cooperative": gm.run("coop")
     quit()
