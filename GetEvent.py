@@ -44,4 +44,3 @@ def _foo(e):
             else:
                 _Clic[e.button]+=1
             e.dict.update({'click':_Clic})
-
