@@ -22,11 +22,11 @@ The application uses the following technologies:
 - GameObjects 0.0.3
 
 ## Installing the application
-  # Setup the project
-  Clone the repository
+    # Setup the project
+    Clone the repository
 
-  # Run application
-  sh run.sh
+    # Run application
+    sh run.sh
 
   Once the app is running, you will be able to simulate the single and cooperative aproach.
 
