@@ -227,7 +227,6 @@ class AntStateExploring(State):
 
         leaf = self.ant.world.get_close_entity("leaf", self.ant.location, 30)
         crumb = self.ant.world.get_close_entity("crumb", self.ant.location, 50)
-        print crumb
 
         if crumb is not None:
             self.ant.crumb_id = crumb.id
@@ -281,7 +280,6 @@ class AntStateSeekingAndPicking(State):
     def check_conditions(self):
         crumb = self.ant.world.get(self.ant.crumb_id)
         if crumb is None:
-             print "got one"
              return "exploring"
         if self.ant.location.get_distance_to(crumb.location) < 4.0:
             self.ant.world.remove_entity(crumb)
@@ -289,7 +287,6 @@ class AntStateSeekingAndPicking(State):
         return None
 
     def entry_actions(self):
-        print self.ant.crumb_id
         crumb = self.ant.world.get(self.ant.crumb_id)
         if crumb is not None:
             self.ant.destination = crumb.location
