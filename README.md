@@ -5,6 +5,8 @@ This application was developed as part of the Artificial Intelligence.
 # TODO
 
 - Refactor
+- Add a more stetic menu
+- Add how many leafs, rocks, agents will be on the game
 
 ## Individual
 - Improve colisions
@@ -13,5 +15,5 @@ This application was developed as part of the Artificial Intelligence.
 
 ## Group
 
-- Make the ant eat the crumbs to grab a leaf
 - Add the collision and random exploring individual implementation
+- Improve crumb recollection to not go back
