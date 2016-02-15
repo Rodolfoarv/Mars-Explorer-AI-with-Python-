@@ -176,7 +176,7 @@ class Ant(GameEntity):
         self.brain.add_state(dropping_delivering_state)
         self.brain.add_state(seeking_picking_state)
         self.carry_image = None
-        self.carry_crumb_image = None
+        self.crumb_delay = 0
 
     def carry(self, image):
         self.carry_image = image
@@ -190,11 +190,15 @@ class Ant(GameEntity):
 
     def dropCrumbs(self, surface):
         if self.carry_image:
-            w, h = SCREEN_SIZE
-            crumb_image = pygame.image.load("crumb.png").convert_alpha()
-            crumb = Crumb(self.world, crumb_image)
-            crumb.location = Vector2(self.location[0], self.location[1])
-            self.world.add_entity(crumb)
+            self.crumb_delay+=1
+            if self.crumb_delay == 1:
+                w, h = SCREEN_SIZE
+                crumb_image = pygame.image.load("crumb.png").convert_alpha()
+                crumb = Crumb(self.world, crumb_image)
+                crumb.location = Vector2(self.location[0], self.location[1])
+                self.world.add_entity(crumb)
+            elif self.crumb_delay == 5:
+                self.crumb_delay = 0
 
 
     def render(self, surface):
@@ -221,8 +225,8 @@ class AntStateExploring(State):
 
     def check_conditions(self):
 
-        leaf = self.ant.world.get_close_entity("leaf", self.ant.location)
-        crumb = self.ant.world.get_close_entity("crumb", self.ant.location)
+        leaf = self.ant.world.get_close_entity("leaf", self.ant.location, 30)
+        crumb = self.ant.world.get_close_entity("crumb", self.ant.location, 50)
         print crumb
 
         if crumb is not None:
@@ -232,11 +236,6 @@ class AntStateExploring(State):
         elif leaf is not None:
             self.ant.leaf_id = leaf.id
             return "seeking"
-
-
-
-
-
         return None
 
     def entry_actions(self):
@@ -257,7 +256,7 @@ class AntStateSeeking(State):
         if leaf is None:
             return "exploring"
 
-        if self.ant.location.get_distance_to(leaf.location) < 1.0:
+        if self.ant.location.get_distance_to(leaf.location) < 4.0:
             self.ant.carry(leaf.image)
             leaf.stock -= 10
             if leaf.stock <= 0:
@@ -284,7 +283,7 @@ class AntStateSeekingAndPicking(State):
         if crumb is None:
              print "got one"
              return "exploring"
-        if self.ant.location.get_distance_to(crumb.location) < 1.0:
+        if self.ant.location.get_distance_to(crumb.location) < 4.0:
             self.ant.world.remove_entity(crumb)
             return "exploring"
         return None
