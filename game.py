@@ -100,7 +100,7 @@ class World(object):
             entity.render(surface)
 
 
-    def get_close_entity(self, name, location, range=70.):
+    def get_close_entity(self, name, location, range=60.):
 
         location = Vector2(*location)
 
@@ -111,7 +111,7 @@ class World(object):
                     return entity
         return None
 
-    def in_obstacle(self, point, range=50.):
+    def in_obstacle(self, point, range=16.):
         location = Vector2(*point)
         for entity in self.entities.itervalues():
             if entity.name == "rock":
@@ -330,13 +330,21 @@ def run(options):
     clock = pygame.time.Clock()
 
     ant_image = pygame.image.load("ant.png").convert_alpha()
+    ant_image2 = pygame.image.load("ant2.png").convert_alpha()
+    ant_image3 = pygame.image.load("ant3.png").convert_alpha()
     leaf_image = pygame.image.load("leaf.png").convert_alpha()
     leaf_image2 = pygame.image.load("leaf2.png").convert_alpha()
     leaf_image3 = pygame.image.load("leaf3.png").convert_alpha()
     rock_image = pygame.image.load("rock.png").convert_alpha()
 
     for ant_no in xrange(AGENT_COUNT):
-        ant = Ant(world, ant_image)
+        random_ant= randint(0, 2)
+        if random_ant == 0:
+            ant = Ant(world, ant_image)
+        elif random_ant == 1:
+            ant = Ant(world, ant_image2)
+        else:
+            ant = Ant(world, ant_image3)
         ant.location = Vector2(NEST_POSITION[0], NEST_POSITION[1])
         ant.brain.set_state("exploring")
         world.add_entity(ant)
