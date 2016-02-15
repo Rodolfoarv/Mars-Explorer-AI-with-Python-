@@ -101,7 +101,7 @@ class World(object):
             entity.render(surface)
 
 
-    def get_close_entity(self, name, location, range=100.):
+    def get_close_entity(self, name, location, range=70.):
 
         location = Vector2(*location)
 
@@ -112,7 +112,7 @@ class World(object):
                     return entity
         return None
 
-    def in_obstacle(self, point, range=16.):
+    def in_obstacle(self, point, range=50.):
         location = Vector2(*point)
         for entity in self.entities.itervalues():
             if entity.name == "rock":
