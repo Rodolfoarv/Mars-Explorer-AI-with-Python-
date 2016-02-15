@@ -331,6 +331,8 @@ def run(options):
 
     ant_image = pygame.image.load("ant.png").convert_alpha()
     leaf_image = pygame.image.load("leaf.png").convert_alpha()
+    leaf_image2 = pygame.image.load("leaf2.png").convert_alpha()
+    leaf_image3 = pygame.image.load("leaf3.png").convert_alpha()
     rock_image = pygame.image.load("rock.png").convert_alpha()
 
     for ant_no in xrange(AGENT_COUNT):
@@ -351,7 +353,13 @@ def run(options):
         world.add_entity(rock)
 
     for min_no in xrange(LEAF_COUNT):
-        leaf = Leaf(world, leaf_image)
+        random_leaf = randint(0, 2)
+        if random_leaf == 0:
+            leaf = Leaf(world, leaf_image)
+        elif random_leaf == 1:
+            leaf = Leaf(world, leaf_image2)
+        else:
+            leaf = Leaf(world, leaf_image3)
         loc = (randint(0, w), randint(0, h))
         while world.is_inside_nest(loc):
             loc = (randint(0, w), randint(0, h))
