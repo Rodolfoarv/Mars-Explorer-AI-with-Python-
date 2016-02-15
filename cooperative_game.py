@@ -1,6 +1,6 @@
 SCREEN_SIZE = (640, 480)
 NEST_POSITION = (320, 240)
-ANT_COUNT = 3
+ANT_COUNT = 2
 ROCK_COUNT = 10
 NEST_SIZE = 100.
 
@@ -190,16 +190,14 @@ class Ant(GameEntity):
 
     def dropCrumbs(self, surface):
         if self.carry_image:
+            w, h = SCREEN_SIZE
             crumb_image = pygame.image.load("crumb.png").convert_alpha()
             crumb = Crumb(self.world, crumb_image)
-            crumb.location = self.location
+            crumb.location = Vector2(self.location[0], self.location[1])
             self.world.add_entity(crumb)
-            x, y = self.location
-            w, h = crumb_image.get_size()
-            surface.blit(crumb_image, (x-w, y-h/2))
+
 
     def render(self, surface):
-
         GameEntity.render(self, surface)
         if self.carry_image:
             x, y = self.location
@@ -264,8 +262,8 @@ class AntStateSeeking(State):
             leaf.stock -= 10
             if leaf.stock <= 0:
                 self.ant.world.remove_entity(leaf)
-                return "dropping_delivering"
-            return "delivering"
+                return "delivering"
+            return "dropping_delivering"
         return None
 
     def entry_actions(self):
@@ -374,10 +372,10 @@ def run_cooperative():
             leaf.location = Vector2(randint(0, w), randint(0, h))
             world.add_entity(leaf)
 
-        if randint(1, 15) == 1:
-            crumb = Crumb(world, crumb_image)
-            crumb.location = Vector2(randint(0, w), randint(0, h))
-            world.add_entity(crumb)
+        # if randint(1, 15) == 1:
+        #     crumb = Crumb(world, crumb_image)
+        #     crumb.location = Vector2(randint(0, w), randint(0, h))
+        #     world.add_entity(crumb)
 
 
         world.process(time_passed)
