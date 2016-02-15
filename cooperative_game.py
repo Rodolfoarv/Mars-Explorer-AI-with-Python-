@@ -1,8 +1,9 @@
-SCREEN_SIZE = (640, 480)
-NEST_POSITION = (320, 240)
-ANT_COUNT = 2
-ROCK_COUNT = 10
-NEST_SIZE = 100.
+SCREEN_SIZE = (600, 600)
+NEST_POSITION = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
+ANT_COUNT = 10
+ROCK_COUNT = 20
+NEST_SIZE = 40.
+LEAF_COUNT = 20
 
 import pygame
 from pygame.locals import *
@@ -71,6 +72,7 @@ class World(object):
         pygame.draw.circle(self.background, (200, 255, 200), NEST_POSITION, int(NEST_SIZE))
 
     def add_entity(self, entity):
+
         self.entities[self.entity_id] = entity
         entity.id = self.entity_id
         self.entity_id += 1
@@ -100,7 +102,9 @@ class World(object):
 
 
     def get_close_entity(self, name, location, range=100.):
+
         location = Vector2(*location)
+
         for entity in self.entities.itervalues():
             if entity.name == name:
                 distance = location.get_distance_to(entity.location)
@@ -108,6 +112,17 @@ class World(object):
                     return entity
         return None
 
+    def in_obstacle(self, point, range=16.):
+        location = Vector2(*point)
+        for entity in self.entities.itervalues():
+            if entity.name == "rock":
+                distance = location.get_distance_to(entity.location)
+                if distance < range:
+                    return True
+        return False
+    def is_inside_nest(self, pos):
+        location = Vector2(*pos)
+        return Vector2(*NEST_POSITION).get_distance_to(location) < NEST_SIZE
 
 class GameEntity(object):
 
@@ -119,9 +134,7 @@ class GameEntity(object):
         self.location = Vector2(0, 0)
         self.destination = Vector2(0, 0)
         self.speed = 0.
-
         self.brain = StateMachine()
-
         self.id = 0
 
     def render(self, surface):
@@ -225,6 +238,10 @@ class AntStateExploring(State):
 
     def check_conditions(self):
 
+        rock = self.ant.world.get_close_entity("rock", self.ant.location)
+        if self.ant.world.in_obstacle(self.ant.location):
+            return "exploring"
+
         leaf = self.ant.world.get_close_entity("leaf", self.ant.location, 30)
         crumb = self.ant.world.get_close_entity("crumb", self.ant.location, 50)
 
@@ -239,7 +256,7 @@ class AntStateExploring(State):
 
     def entry_actions(self):
 
-        self.ant.speed = 120. + randint(-30, 30)
+        self.ant.speed = 120.
         self.random_destination()
 
 
@@ -306,11 +323,20 @@ class AntStateDelivering(State):
                 return "exploring"
         return None
 
+    def random_destination(self):
+
+        w, h = SCREEN_SIZE
+        dest = Vector2(randint(0, w), randint(0, h))
+        self.ant.destination = dest
+
+    def do_actions(self):
+        self.random_destination()
     def entry_actions(self):
+
         self.ant.speed = 60.
         random_offset = Vector2(randint(-20, 20), randint(-20, 20))
-        self.ant.destination = Vector2(*NEST_POSITION) + random_offset
-
+        # self.ant.destination = Vector2(*NEST_POSITION) + random_offset
+        self.random_destination()
 
 class AntStateDroppingAndDelivering(State):
     def __init__(self, ant):
@@ -330,8 +356,21 @@ class AntStateDroppingAndDelivering(State):
         random_offset = Vector2(randint(-20, 20), randint(-20, 20))
         self.ant.destination = Vector2(*NEST_POSITION) + random_offset
 
+class GameOptions:
+    SCREEN_SIZE = (600, 600)
+    NEST_POSITION = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
+    AGENT_COUNT = 10
+    ROCK_COUNT = 20
+    NEST_SIZE = 40.
+    LEAF_COUNT = 20
 
-def run_cooperative():
+def run_cooperative(options):
+
+    if options:
+        SCREEN_SIZE = options.SCREEN_SIZE
+        AGENT_COUNT = options.AGENT_COUNT
+        ROCK_COUNT = options.ROCK_COUNT
+        LEAF_COUNT = options.LEAF_COUNT
 
     pygame.init()
     screen = pygame.display.set_mode(SCREEN_SIZE, 0, 32)
@@ -344,34 +383,38 @@ def run_cooperative():
     rock_image = pygame.image.load("rock.png").convert_alpha()
     crumb_image = pygame.image.load("crumb.png").convert_alpha()
 
-    for ant_no in xrange(ANT_COUNT):
-
+    for ant_no in xrange(AGENT_COUNT):
         ant = Ant(world, ant_image)
-        ant.location = Vector2(randint(0, w), randint(0, h))
+        ant.location = Vector2(NEST_POSITION[0], NEST_POSITION[1])
         ant.brain.set_state("exploring")
         world.add_entity(ant)
 
     for rock_no in xrange(ROCK_COUNT):
         rock = Rock(world, rock_image)
-        rock.location = Vector2(randint(0, w), randint(0, h))
+        x_pos = randint(0, w)
+        y_pos = randint(0, h)
+        pos = (x_pos, y_pos)
+        while world.is_inside_nest(pos):
+            x_pos = randint(0, w)
+            y_pos = randint(0, h)
+        rock.location = Vector2(x_pos, y_pos)
         world.add_entity(rock)
 
+    for min_no in xrange(LEAF_COUNT):
+        leaf = Leaf(world, leaf_image)
+        loc = (randint(0, w), randint(0, h))
+        while world.is_inside_nest(loc):
+            loc = (randint(0, w), randint(0, h))
+        leaf.location = Vector2(*loc)
+        world.add_entity(leaf)
 
     while True:
 
         for event in pygame.event.get():
             if event.type == QUIT:
                 return
-        time_passed = clock.tick(30)
-        if randint(1, 20) == 1:
-            leaf = Leaf(world, leaf_image)
-            leaf.location = Vector2(randint(0, w), randint(0, h))
-            world.add_entity(leaf)
 
-        # if randint(1, 15) == 1:
-        #     crumb = Crumb(world, crumb_image)
-        #     crumb.location = Vector2(randint(0, w), randint(0, h))
-        #     world.add_entity(crumb)
+        time_passed = clock.tick(30)
 
 
         world.process(time_passed)

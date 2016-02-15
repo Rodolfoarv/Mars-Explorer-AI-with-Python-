@@ -320,7 +320,7 @@ class GameMenu():
         self.screen = screen
         self.bg_color = bg_color
         self.clock = pygame.time.Clock()
-    def run(self):
+    def run(self, mode):
         mainloop = True
         while mainloop:
             # Limit frame speed
@@ -341,7 +341,10 @@ class GameMenu():
                 options.LEAF_COUNT = int(leaf_count)
 
                 mainloop = False
-                run(options)
+                if mode == "single":
+                    run(options)
+                else:
+                    run_cooperative(options)
 
 
 if __name__ == '__main__':
@@ -373,8 +376,8 @@ if __name__ == '__main__':
                      cursor_img = image.load('mouse.png'),
                      hotspot    = (38,15))
 
-        if resp[0] == "Single": gm.run()
-        elif resp[0] == "Cooperative": run_cooperative()
+        if resp[0] == "Single": gm.run("single")
+        elif resp[0] == "Cooperative": gm.run("coop")
         elif resp[0] == "Quit": break
         elif resp[0] != "re-show": break
     quit()

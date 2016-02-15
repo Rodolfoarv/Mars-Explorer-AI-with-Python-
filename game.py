@@ -217,10 +217,6 @@ class AntStateExploring(State):
 
         w, h = SCREEN_SIZE
         dest = Vector2(randint(0, w), randint(0, h))
-        # while self.ant.world.in_obstacle(dest):
-        #     print("COLLISION in ", dest)
-        #     print("ANT POS", self.ant.location)
-        #     dest = Vector2(randint(0, w), randint(0, h))
         self.ant.destination = dest
 
     def do_actions(self):
