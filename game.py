@@ -229,7 +229,6 @@ class AntStateExploring(State):
     def check_conditions(self):
         rock = self.ant.world.get_close_entity("rock", self.ant.location)
         if self.ant.world.in_obstacle(self.ant.location):
-            print("COLLISION ", self.ant.location)
             return "exploring"
 
         leaf = self.ant.world.get_close_entity("leaf", self.ant.location)
@@ -310,8 +309,21 @@ class AntStateDelivering(State):
         # self.ant.destination = Vector2(*NEST_POSITION) + random_offset
         self.random_destination()
 
+class GameOptions:
+    SCREEN_SIZE = (600, 600)
+    NEST_POSITION = (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
+    AGENT_COUNT = 10
+    ROCK_COUNT = 20
+    NEST_SIZE = 40.
+    LEAF_COUNT = 20
 
-def run():
+def run(options):
+
+    if options:
+        SCREEN_SIZE = options.SCREEN_SIZE
+        AGENT_COUNT = options.AGENT_COUNT
+        ROCK_COUNT = options.ROCK_COUNT
+        LEAF_COUNT = options.LEAF_COUNT
 
     pygame.init()
     screen = pygame.display.set_mode(SCREEN_SIZE, 0, 32)
@@ -326,7 +338,7 @@ def run():
     leaf_image = pygame.image.load("leaf.png").convert_alpha()
     rock_image = pygame.image.load("rock.png").convert_alpha()
 
-    for ant_no in xrange(ANT_COUNT):
+    for ant_no in xrange(AGENT_COUNT):
         ant = Ant(world, ant_image)
         ant.location = Vector2(NEST_POSITION[0], NEST_POSITION[1])
         ant.brain.set_state("exploring")

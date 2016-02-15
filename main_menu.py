@@ -8,7 +8,7 @@ font.init()
 from math import cos,radians
 try: import GetEvent
 except: from . import GetEvent
-from game import *
+from inputbox import *
 
 def menu(
          menu,                          # iterable of str as ("item",) or ("item::tooltip",)
@@ -19,8 +19,8 @@ def menu(
          interline  = 5,                # int: items spacing
          justify    = True,             # boolean
          light      = 5,                # int in range [-10,10]: use if color2 is None
-         speed      = 300,              # int (0 = no sliding): anim speed
-         lag        = 30,               # int in range [0,90]
+         speed      = 100,              # int (0 = no sliding): anim speed
+         lag        = 10,               # int in range [0,90]
          neon       = True,             # boolean: set neon effect
          tooltipfont= None,             # font object|None(pygame default font)
          tooltiptime= 2000,             # int
@@ -315,14 +315,49 @@ def menu(
     mouse.set_visible(was_visible)
     return ret
 
+class GameMenu():
+    def __init__(self, screen, bg_color=(0,0,0)):
+        self.screen = screen
+        self.bg_color = bg_color
+        self.clock = pygame.time.Clock()
+    def run(self):
+        mainloop = True
+        while mainloop:
+            # Limit frame speed
+            # self.clock.tick(50)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    mainloop = False
+            # Redraw background
+            # self.screen.fill(self.bg_color)
+            agent_count = ask(scr, (300, 20), "AGENT COUNT? (10)")
+            rock_count = ask(scr, (300,100), "ROCK COUNT? (20) ")
+            leaf_count = ask(scr, (300,400), "LEAF COUNT? (20) ")
+            pygame.display.flip()
+            if rock_count and leaf_count:
+                options = GameOptions()
+                options.AGENT_COUNT = int(agent_count)
+                options.ROCK_COUNT = int(rock_count)
+                options.LEAF_COUNT = int(leaf_count)
+
+                mainloop = False
+                run(options)
+
+
 if __name__ == '__main__':
+    options = GameOptions()
+    options.SCREEN_SIZE = (600, 600)
+
     from os.path import dirname,join
     here = dirname(__file__)
-    scr = display.set_mode((0,0),FULLSCREEN)
+    scr = display.set_mode(options.SCREEN_SIZE, 0, 32)
+    pygame.display.set_caption("MENU")
     bg = image.load(join(here,'bg.png'))
     scr.blit(bg,bg.get_rect(center=scr.get_rect().center))
     #~ scr.fill(-1)
-    display.flip();print(menu.__doc__)
+    display.flip()
+
+    gm = GameMenu(scr)
 
     while True:
         resp = menu(['Single',
@@ -337,7 +372,8 @@ if __name__ == '__main__':
                      tooltiptime= 1000,
                      cursor_img = image.load('mouse.png'),
                      hotspot    = (38,15))
-        if resp[0] == "Single": run()
+
+        if resp[0] == "Single": gm.run()
         elif resp[0] == "Cooperative": run_cooperative()
         elif resp[0] == "Quit": break
         elif resp[0] != "re-show": break
