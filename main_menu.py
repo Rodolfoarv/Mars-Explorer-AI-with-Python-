@@ -319,7 +319,7 @@ if __name__ == '__main__':
     from os.path import dirname,join
     here = dirname(__file__)
     scr = display.set_mode((0,0),FULLSCREEN)
-    bg = image.load(join(here,'test3.png'))
+    bg = image.load(join(here,'bg.png'))
     scr.blit(bg,bg.get_rect(center=scr.get_rect().center))
     #~ scr.fill(-1)
     display.flip();print(menu.__doc__)
